@@ -1,5 +1,3 @@
 flask
-pyjwt
 mysql-connector-python
-requests
-typing_extensions
+bcrypt
