@@ -1,0 +1,70 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: assessment_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: assessment_system
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD","mysqladmin","ping","-h","localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-registration:
+    build: ./auth-registration
+    container_name: auth_registration_service
+    restart: always
+    ports:
+      - "5001:5001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_USER: devuser
+      DB_PASS: dev@user1
+      DB_NAME: assessment_system
+
+  auth-otp:
+    build: ./auth-otp
+    container_name: auth_otp_service
+    restart: always
+    ports:
+      - "5002:5002"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_USER: devuser
+      DB_PASS: dev@user1
+      DB_NAME: assessment_system
+      FAST2SMS_API_KEY: ${FAST2SMS_API_KEY}
+
+  core-assessment:
+    build: ./core-assessment
+    container_name: core_assessment_service
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_USER: devuser
+      DB_PASS: dev@user1
+      DB_NAME: assessment_system
+    volumes:
+      - ./core-assessment/uploads:/app/uploads
+
+volumes:
+  mysql_data:
