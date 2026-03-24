@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Teacher</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f8;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #002855;
+      color: white;
+      height: 100vh;
+      padding-top: 2rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 1rem 2rem;
+      display: block;
+    }
+
+    .sidebar a:hover {
+      background: #004b93;
+    }
+
+    .main {
+      flex-grow: 1;
+      padding: 2rem;
+    }
+
+    h2 {
+      margin-bottom: 1rem;
+    }
+
+    .form-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      max-width: 500px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    input, button {
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #ff6600;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #e65c00;
+    }
+
+    .upload-link {
+      margin-bottom: 1rem;
+      display: inline-block;
+      color: #ff6600;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .upload-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <h3 style="text-align: center; color: white; margin-bottom: 2rem;">Admin Menu</h3>
+    <a href="/admindashboard">🏠 Dashboard</a>
+    <a href="/view_teachers">👨‍🏫 View Teachers</a>
+    <a href="/view_students">👨‍🎓 View Students</a>
+    <a href="/view_classes">🏫 View Classes</a>
+    <a href="/teacher_activity">📊 Teacher Activity</a>
+    <a href="/logout">🚪 Logout</a>
+  </div>
+
+  <div class="main">
+    <h2>Add Teacher</h2>
+    <a class="upload-link" href="/upload_csv">📁 Upload via CSV</a>
+    
+    <div class="form-card">
+      <form method="POST">
+        <input type="text" name="reg_id" placeholder="Register ID" required>
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="text" name="department" placeholder="Department" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">➕ Add Teacher</button>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>

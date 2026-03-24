@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Live Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 2rem;
+    }
+    .form-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 900px;
+      margin: auto;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    input[type=text], input[type=number], textarea, input[type=file] {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 0.7rem 1.5rem;
+      background-color: #002855;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004b93;
+    }
+    .back-btn {
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 1rem;
+      background-color: #999;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+    }
+    .back-btn:hover {
+      background-color: #777;
+    }
+    .hint {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+    .question-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: #fbfdff;
+    }
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+    .remove-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 0.4rem 0.7rem;
+      cursor: pointer;
+    }
+    .remove-btn:hover { background: #b92a37; }
+    .option-row {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-box">
+    <a href="/subject/{{ subject.sub_id }}/assignments" class="back-btn">&larr; Back to Assignments</a>
+    <h2>Create Live Test</h2>
+    <form method="POST" id="liveTestForm">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" name="title" required>
+      </div>
+      <div class="form-group">
+        <label>Duration (minutes)</label>
+        <input type="number" name="duration_minutes" min="1" max="300" required>
+      </div>
+      <div class="form-group">
+        <label>Total Marks</label>
+        <input type="number" name="total_marks" min="1" max="100" required>
+      </div>
+      <div class="form-group">
+        <label>MCQ Questions (max 40)</label>
+        <div class="hint">Each question needs 4 options and one correct answer.</div>
+        <div class="controls">
+          <button type="button" onclick="addQuestion()">+ Add Question</button>
+          <span id="questionCount" class="hint" style="align-self:center;">0 / 40 questions</span>
+        </div>
+        <div id="questionsContainer"></div>
+        <input type="hidden" name="mcq_payload" id="mcqPayload" />
+      </div>
+      <div class="form-group">
+        <label>Evaluation Criteria</label>
+        <textarea name="evaluation_criteria" rows="3" placeholder="Example: Negative marking: No, One mark per correct answer"></textarea>
+      </div>
+      <button type="submit">Create Live Test</button>
+    </form>
+  </div>
+
+  <script>
+    const maxQuestions = 40;
+
+    function updateCount() {
+      const cards = document.querySelectorAll('.question-card').length;
+      document.getElementById('questionCount').textContent = `${cards} / ${maxQuestions} questions`;
+    }
+
+    function addQuestion() {
+      const container = document.getElementById('questionsContainer');
+      const current = container.querySelectorAll('.question-card').length;
+      if (current >= maxQuestions) {
+        alert('Maximum 40 questions allowed.');
+        return;
+      }
+
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      card.innerHTML = `
+        <div class="question-header">
+          <strong>Question ${current + 1}</strong>
+          <button type="button" class="remove-btn" onclick="removeQuestion(this)">Remove</button>
+        </div>
+        <div class="form-group">
+          <label>Question Text</label>
+          <textarea class="q-text" rows="3" placeholder="Enter question..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Options (select one correct option)</label>
+          <div class="option-row"><input type="radio" class="q-correct" name="correct-${Date.now()}-${Math.random()}"><input type="text" class="q-option" placeholder="Option A" required></div>
+          <div class="option-row"><input type="radio" class="q-correct" name="correct-${Date.now()}-${Math.random()}"><input type="text" class="q-option" placeholder="Option B" required></div>
+          <div class="option-row"><input type="radio" class="q-correct" name="correct-${Date.now()}-${Math.random()}"><input type="text" class="q-option" placeholder="Option C" required></div>
+          <div class="option-row"><input type="radio" class="q-correct" name="correct-${Date.now()}-${Math.random()}"><input type="text" class="q-option" placeholder="Option D" required></div>
+        </div>
+      `;
+
+      const radios = card.querySelectorAll('.q-correct');
+      const radioGroupName = `correct-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+      radios.forEach(r => { r.name = radioGroupName; });
+
+      container.appendChild(card);
+      renumberQuestions();
+      updateCount();
+    }
+
+    function removeQuestion(button) {
+      const card = button.closest('.question-card');
+      card.remove();
+      renumberQuestions();
+      updateCount();
+    }
+
+    function renumberQuestions() {
+      document.querySelectorAll('.question-card').forEach((card, idx) => {
+        card.querySelector('.question-header strong').textContent = `Question ${idx + 1}`;
+      });
+    }
+
+    document.getElementById('liveTestForm').addEventListener('submit', function (event) {
+      const cards = document.querySelectorAll('.question-card');
+      if (cards.length === 0) {
+        event.preventDefault();
+        alert('Please add at least one question.');
+        return;
+      }
+
+      const payload = [];
+
+      for (const card of cards) {
+        const questionText = card.querySelector('.q-text').value.trim();
+        const options = Array.from(card.querySelectorAll('.q-option')).map(opt => opt.value.trim());
+        const radios = Array.from(card.querySelectorAll('.q-correct'));
+        const correctIndex = radios.findIndex(r => r.checked);
+
+        if (!questionText) {
+          event.preventDefault();
+          alert('Every question must have question text.');
+          return;
+        }
+        if (options.length !== 4 || options.some(opt => !opt)) {
+          event.preventDefault();
+          alert('Each question must have 4 non-empty options.');
+          return;
+        }
+        if (correctIndex < 0) {
+          event.preventDefault();
+          alert('Please select one correct option for each question.');
+          return;
+        }
+
+        payload.push({
+          question: questionText,
+          options: options,
+          correct_index: correctIndex
+        });
+      }
+
+      document.getElementById('mcqPayload').value = JSON.stringify(payload);
+    });
+
+    addQuestion();
+  </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!-- home.html not used-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home | Real-Time Assessment</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background-color: #eef2f6; }
+    .navbar {
+      background-color: #002855; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
+    }
+    .navbar .profile { cursor: pointer; }
+    .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 2rem; }
+    .card {
+      background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; transition: 0.3s;
+    }
+    .card:hover { background: #004b93; color: white; }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">Real-Time Assessment</div>
+    <div class="profile">👤 Profile</div>
+  </div>
+  <!--<div class="container">
+    <div class="card" onclick="window.location.href='dashboard.html'">MCA B</div>
+    <div class="card" onclick="window.location.href='dashboard.html'">BSc</div>
+    <div class="card" onclick="window.location.href='dashboard.html'">BCA</div>
+  </div>-->
+
+  <div class="container">
+  {% for cls in classes %}
+    <a href="{{ url_for('class_dashboard', class_id=cls.id) }}" style="text-decoration:none;">
+      <div class="card">
+        {{ cls.class_id }}
+      </div>
+    </a>
+  {% endfor %}
+</div>
+
+
+</body>
+</html>

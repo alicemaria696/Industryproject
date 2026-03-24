@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Class</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: #002855;
+      color: white;
+      height: 100vh;
+      padding-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      position: fixed; /* stick it to the left */
+      left: 0;
+      top: 0;
+    }
+
+    .sidebar h3 {
+      text-align: center;
+      color: white;
+      margin-bottom: 2rem;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 1rem 2rem;
+      display: block;
+    }
+
+    .sidebar a:hover {
+      background: #004b93;
+    }
+
+    /* Main content */
+    .main {
+      margin-left: 220px; /* push right to avoid overlap with sidebar */
+      flex: 1;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    /* Card */
+    .form-card {
+      background: white;
+      padding: 2rem;
+      max-width: 400px;
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    input, button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      background-color: #ff6600;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #e65c00;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h3>Admin Menu</h3>
+    <a href="/admindashboard">🏠 Dashboard</a>
+    <a href="/view_teachers">👨‍🏫 View Teachers</a>
+    <a href="/view_students">👨‍🎓 View Students</a>
+    <a href="/view_classes">🏫 View Classes</a>
+    <a href="/teacher_activity">📊 Teacher Activity</a>
+    <a href="/logout">🚪 Logout</a>
+  </div>
+
+  <div class="main">
+    <div class="form-card">
+      <h2>Add New Class</h2>
+      <form method="POST">
+        <input type="text" name="class_id" placeholder="e.g. 4 MCA A" required>
+        <button type="submit">➕ Add Class</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

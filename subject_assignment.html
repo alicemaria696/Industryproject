@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ subject.s_name }} Assignments</title>
+  <style>
+    body { margin: 0; display: flex; font-family: Arial; background: #f4f6f8; }
+    .sidebar {
+      width: 220px; background: #002855; color: white; height: 100vh; padding-top: 1rem;
+    } 
+    .sidebar a {
+      color: white; text-decoration: none; display: block; padding: 1rem 1.5rem;
+    }
+    .sidebar a:hover { background: #004b93; }
+    .main {
+      flex-grow: 1; padding: 2rem;
+    }
+    .card {
+      background: white; padding: 1rem; margin-bottom: 1rem;
+      border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <a href="/home">🏠 Dashboard</a>
+    <h3 style="text-align:center;margin-top:2rem;">📚 Subjects</h3>
+    {% for sub in subjects %}
+      <a href="{{ url_for('subject_assignments', sub_id=sub.sub_id) }}">{{ sub.s_name }}</a>
+    {% endfor %}
+    <a href="/logout">🚪 Logout</a>
+  </div>
+
+  <div class="main">
+    <h2>Assignments for {{ subject.s_name }}</h2>
+    {% if assignments %}
+      {% for a in assignments %}
+        <div class="card">
+          <h3>{{ a.title }}</h3>
+          <p><strong>Deadline:</strong> {{ a.time.strftime('%Y-%m-%d %H:%M') }}</p>
+          <p><strong>Total Marks:</strong> {{ a.total_marks }}</p>
+          <p><strong>Type:</strong> {{ a.type }}</p>
+          <a href="{{ url_for('view_assignment', assignment_id=a.id) }}">🔎 View Details</a>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No assignments created yet for this subject.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

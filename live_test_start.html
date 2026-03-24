@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Test - {{ test.title }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .timer {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #dc3545;
+    }
+    .status {
+      font-size: 0.95rem;
+      color: #6c757d;
+    }
+    .video-wrap {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+    video {
+      width: 100%;
+      border-radius: 8px;
+      background: #000;
+    }
+    .button {
+      padding: 0.7rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .button.primary { background: #002855; color: white; }
+    .button.primary:hover { background: #004b93; }
+    .button.danger { background: #dc3545; color: white; }
+    .button.danger:hover { background: #c82333; }
+    .button.disabled { background: #adb5bd; cursor: not-allowed; }
+    .warning {
+      background: #fff3cd;
+      color: #856404;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+    }
+    .question-file a { color: #002855; }
+    .mcq-item {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: #fafcff;
+    }
+    .mcq-options label {
+      display: block;
+      margin: 0.35rem 0;
+      cursor: pointer;
+    }
+    textarea, input[type=file] {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <div>
+          <h2>{{ test.title }}</h2>
+          <div class="status" id="statusText">Ready to start</div>
+        </div>
+        <div class="timer" id="timerDisplay">{{ test.duration_minutes }}:00</div>
+      </div>
+      <div class="warning" id="warningBox" style="display:none;"></div>
+    </div>
+
+    <div class="card" id="questionsCard" style="display:none;">
+      <h3>MCQ Questions</h3>
+      {% if mcq_questions %}
+        <div id="mcqContainer">
+          {% for question in mcq_questions %}
+          {% set question_index = loop.index0 %}
+          <div class="mcq-item">
+            <p><strong>Q{{ loop.index }}.</strong> {{ question.question }}</p>
+            <div class="mcq-options">
+              {% for option in question.options %}
+              <label>
+                <input type="radio" name="q{{ question_index }}" value="{{ loop.index0 }}">
+                {{ option }}
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>No MCQ set found for this live test.</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <div class="video-wrap">
+        <div>
+          <h3>Live Camera</h3>
+          <video id="preview" autoplay muted playsinline></video>
+          <div style="margin-top: 1rem;">
+            <button id="startBtn" class="button primary" onclick="startTest()">Start Test</button>
+            <button id="submitBtn" class="button danger" onclick="submitTest('SUBMITTED')" disabled>Submit Test</button>
+          </div>
+          <div id="scorePreview" class="status" style="margin-top: 0.8rem;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const testId = {{ test.id }};
+    let attemptId = null;
+    let endTime = null;
+    let timerInterval = null;
+    let mediaRecorder = null;
+    let mediaStream = null;
+    let recordedChunks = [];
+    let proctorEvents = [];
+    let focusLostCount = 0;
+    let hasStarted = false;
+    let isSubmitting = false;
+
+    function setStatus(text) {
+      document.getElementById('statusText').textContent = text;
+    }
+
+    function showWarning(message) {
+      const box = document.getElementById('warningBox');
+      box.style.display = 'block';
+      box.textContent = message;
+    }
+
+    function logEvent(type, detail) {
+      proctorEvents.push({ type: type, detail: detail, ts: new Date().toISOString() });
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!hasStarted || isSubmitting) {
+        return;
+      }
+      if (document.hidden) {
+        focusLostCount += 1;
+        logEvent('visibility_hidden', 'Tab switched or window minimized');
+        showWarning('Warning: Switching tabs is not allowed during the test.');
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      if (!hasStarted || isSubmitting) {
+        return;
+      }
+      // Small delay to avoid triggering on beforeunload dialog
+      setTimeout(() => {
+        if (document.hasFocus() || isSubmitting) {
+          return;
+        }
+        focusLostCount += 1;
+        logEvent('window_blur', 'Window lost focus');
+        showWarning('Warning: Leaving the test window is not allowed.');
+      }, 500);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!hasStarted) {
+        return;
+      }
+      const key = (e.key || '').toLowerCase();
+      if (key === 'tab') {
+        logEvent('key_tab', 'Tab pressed');
+      }
+      if (e.ctrlKey && (key === 'c' || key === 'v')) {
+        logEvent('key_ctrl', `Ctrl+${key.toUpperCase()} pressed`);
+      }
+    });
+
+    async function startTest() {
+      if (hasStarted) {
+        return;
+      }
+      try {
+        setStatus('Checking camera...');
+        const cameraReady = await startRecording();
+        if (!cameraReady) {
+          setStatus('Enable camera access to start test');
+          return;
+        }
+
+        setStatus('Starting test...');
+        const response = await fetch(`/live_test/${testId}/begin`, { method: 'POST' });
+        const data = await response.json();
+        if (!response.ok) {
+          stopCameraStream();
+          setStatus('Unable to start test');
+          return;
+        }
+
+        const endTimeRaw = String(data.end_time || '');
+        const hasTimezone = /z$|[+\-]\d{2}:\d{2}$/i.test(endTimeRaw);
+        endTime = new Date(hasTimezone ? endTimeRaw : `${endTimeRaw}Z`);
+        if (Number.isNaN(endTime.getTime())) {
+          stopCameraStream();
+          setStatus('Unable to start test');
+          return;
+        }
+
+        attemptId = data.attempt_id;
+        hasStarted = true;
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('questionsCard').style.display = 'block';
+        setStatus('Test in progress');
+        startTimer();
+      } catch (error) {
+        stopCameraStream();
+        setStatus('Unable to start test');
+      }
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        const now = new Date();
+        const remainingMs = endTime - now;
+        if (remainingMs <= 0) {
+          clearInterval(timerInterval);
+          document.getElementById('timerDisplay').textContent = '00:00';
+          submitTest('TIME_EXPIRED');
+          return;
+        }
+        const totalSeconds = Math.floor(remainingMs / 1000);
+        const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        document.getElementById('timerDisplay').textContent = `${minutes}:${seconds}`;
+      }, 1000);
+    }
+
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        mediaStream = stream;
+        const preview = document.getElementById('preview');
+        preview.srcObject = stream;
+
+        mediaRecorder = new MediaRecorder(stream);
+        recordedChunks = [];
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+        mediaRecorder.start(1000);
+        return true;
+      } catch (error) {
+        showWarning('Camera permission is required for the live test.');
+        logEvent('camera_error', 'Camera permission denied or not available');
+        return false;
+      }
+    }
+
+    function stopCameraStream() {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach((track) => track.stop());
+        mediaStream = null;
+      }
+      const preview = document.getElementById('preview');
+      if (preview) {
+        preview.srcObject = null;
+      }
+    }
+
+    function stopRecordingAndUpload() {
+      return new Promise((resolve) => {
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+          resolve();
+          return;
+        }
+        mediaRecorder.onstop = async () => {
+          try {
+            await uploadRecording();
+          } catch (error) {
+            // Ignore upload errors for now
+          }
+          resolve();
+        };
+        mediaRecorder.stop();
+      });
+    }
+
+    async function uploadRecording() {
+      if (!recordedChunks.length) {
+        return;
+      }
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      const formData = new FormData();
+      formData.append('attempt_id', attemptId);
+      formData.append('recording', blob, 'recording.webm');
+      await fetch(`/live_test/${testId}/upload_recording`, {
+        method: 'POST',
+        body: formData
+      });
+    }
+
+    async function submitTest(status) {
+      if (!attemptId) {
+        return;
+      }
+      isSubmitting = true;
+      document.getElementById('submitBtn').disabled = true;
+      setStatus('Submitting test...');
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+      await stopRecordingAndUpload();
+      stopCameraStream();
+
+      const formData = new FormData();
+      formData.append('attempt_id', attemptId);
+
+      const answers = [];
+      const totalQuestions = {{ mcq_questions|length }};
+      for (let i = 0; i < totalQuestions; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        answers.push(selected ? parseInt(selected.value, 10) : null);
+      }
+
+      formData.append('answers_json', JSON.stringify(answers));
+      formData.append('focus_lost_count', focusLostCount);
+      formData.append('proctor_events', JSON.stringify(proctorEvents));
+      formData.append('status', status);
+
+      const response = await fetch(`/live_test/${testId}/submit`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setStatus('Test submitted');
+        const preview = document.getElementById('scorePreview');
+        preview.textContent = `Score: ${data.score}/${data.total_marks} (${data.correct_answers}/${data.total_questions} correct)`;
+        showWarning('Submission completed. You can review your score and navigate when ready.');
+      } else {
+        setStatus('Submission failed');
+        document.getElementById('submitBtn').disabled = false;
+      }
+    }
+
+    window.addEventListener('beforeunload', (event) => {
+      if (hasStarted && !isSubmitting) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    });
+  </script>
+</body>
+</html>

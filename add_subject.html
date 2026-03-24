@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Subject</title>
+  <style>
+    body { background: #f4f6f8; font-family: Arial; padding: 2rem; }
+    .form-card {
+      background: white; padding: 2rem; max-width: 400px; margin: auto;
+      border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    input, button {
+      width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+      border: 1px solid #ccc; border-radius: 8px;
+    }
+    button {
+      background-color: #ff6600; color: white; border: none; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-card">
+    <h2>Add Subject</h2>
+    <form method="POST">
+      <input type="text" name="s_name" placeholder="Subject Name" required>
+      <button type="submit">➕ Add</button>
+    </form>
+  </div>
+</body>
+</html>

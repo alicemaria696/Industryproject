@@ -1,0 +1,351 @@
+<!--Teacher dashboard-->
+
+<!--Teacher dashboard-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Teacher Dashboard</title>
+  <style>
+    body { margin: 0; display: flex; font-family: Arial; background: #f4f6f8; }
+    .sidebar {
+      width: 220px; background: #002855; color: white; height: 100vh; padding-top: 1rem;
+    } 
+    .sidebar a {
+      color: white; text-decoration: none; display: block; padding: 1rem 1.5rem;
+    }
+    .sidebar a:hover {
+      background: #004b93;
+    }
+    .main {
+      padding: 2rem;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+    .subject-header {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .add-btn {
+      background: #ff6600; color: white; padding: 0.5rem 1rem; border: none;
+      border-radius: 8px; cursor: pointer; text-decoration: none;
+    }
+    .card {
+      background: white; padding: 1rem; margin-top: 1.5rem;
+      border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .results-tabs {
+      display: flex;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid #eee;
+    }
+    .tab-button {
+      padding: 0.75rem 1.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    .tab-button.active {
+      border-bottom-color: #002855;
+      color: #002855;
+      font-weight: bold;
+    }
+    .tab-button:hover {
+      background-color: #f0f0f0;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 1rem;
+    }
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #002855;
+      color: white;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    .status-pass { color: #28a745; font-weight: bold; }
+    .status-fail { color: #dc3545; font-weight: bold; }
+    .on-time-yes { color: #28a745; }
+    .on-time-no { color: #dc3545; }
+    .assignment-type {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    .type-regular { background: #e3f2fd; color: #1976d2; }
+    .type-script { background: #fff3e0; color: #f57c00; }
+    .type-live { background: #e8f5e9; color: #2e7d32; }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h3 style="text-align: center; color: white; margin-bottom: 2rem;">👨‍🏫 Teacher Dashboard</h3>
+
+  <!-- Dashboard link -->
+  <a href="{{ url_for('home') }}">🏠 Dashboard</a>
+
+  <!-- Student performance -->
+  <a href="{{ url_for('student_performance', class_id=class_id) }}">📊 Student Performance</a>
+
+  <!-- Reports -->
+  <a href="{{ url_for('teacher_reports', class_id=class_id) }}">📈 Reports</a>
+
+  <!-- View students -->
+  <a href="{{ url_for('view_students_by_class', class_id=class_id) }}">👨‍🎓 View Students</a>
+
+  <!-- Subjects -->
+  <h4 style="text-align: center; margin-top: 2rem; color: #ffcc00;">📚 Subjects</h4>
+  {% for sub in subjects %}
+    <a href="{{ url_for('subject_assignments', sub_id=sub.sub_id) }}">{{ sub.s_name }}</a>
+  {% else %}
+    <p style="padding: 1rem;">No subjects</p>
+  {% endfor %}
+
+  <!-- Logout -->
+  <a href="/logout">🚪 Logout</a>
+</div>
+
+
+<div class="main">
+  <div class="subject-header">
+    <h2>Subjects for Class ID: {{ class_id }}</h2>
+    <a class="add-btn" href="/class/{{ class_id }}/add_subject">➕ Add Subject</a>
+  </div>
+  
+  <div class="card">
+    <h3>📊 Student Performance</h3>
+    <div style="margin: 0.75rem 0 1rem 0;">
+      <a class="add-btn" href="{{ url_for('download_student_performance', class_id=class_id) }}">⬇️ Download Results (Excel)</a>
+    </div>
+    
+    {% if regular_results or script_results or live_results %}
+      <div class="results-tabs">
+        <button class="tab-button active" onclick="showTab('all')">All Results</button>
+        <button class="tab-button" onclick="showTab('regular')">Regular Assignments</button>
+        <button class="tab-button" onclick="showTab('script')">Script Assignments</button>
+        <button class="tab-button" onclick="showTab('live')">Live Tests</button>
+      </div>
+
+      <!-- All Results Tab -->
+      <div id="all-tab" class="tab-content active">
+        <table>
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Subject</th>
+              <th>Assignment</th>
+              <th>Type</th>
+              <th>Marks</th>
+              <th>Total Marks</th>
+              <th>Status</th>
+              <th>On Time</th>
+              <th>Submitted At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for result in combined_results %}
+            <tr>
+              <td>{{ result.student_id }}</td>
+              <td>{{ result.subject_name }}</td>
+              <td>{{ result.assignment_title }}</td>
+              <td><span class="assignment-type type-{{ result.assignment_type }}">{{ result.assignment_type.title() }}</span></td>
+              <td>{{ result.marks_obtained }}/{{ result.total_marks }}</td>
+              <td>{{ result.total_marks }}</td>
+              <td><span class="status-{{ (result.status or 'n/a')|lower }}">{{ result.status or 'N/A' }}</span></td>
+              <td><span class="on-time-{{ 'yes' if result.on_time else 'no' }}">{{ 'Yes' if result.on_time else 'No' }}</span></td>
+              <td>{{ result.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td>
+                {% if result.assignment_type == 'regular' and result.file_name %}
+                  <a href="{{ url_for('view_submission_file', filename=result.file_name) }}" target="_blank">Review</a>
+                  |
+                  <a href="{{ result.edit_url }}">Edit</a>
+                {% elif result.assignment_type == 'live' %}
+                  {% if result.recording_path %}
+                    <a href="{{ url_for('live_test_recording', filename=result.recording_path) }}" target="_blank">Review</a>
+                    |
+                  {% endif %}
+                  <a href="{{ result.edit_url }}">Edit</a>
+                {% else %}
+                  Auto-scored
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Regular Assignments Tab -->
+      <div id="regular-tab" class="tab-content">
+        <table>
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Subject</th>
+              <th>Assignment</th>
+              <th>Document</th>
+              <th>Matches</th>
+              <th>Marks</th>
+              <th>Status</th>
+              <th>On Time</th>
+              <th>Evaluated At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in regular_results %}
+            <tr>
+              <td>{{ r.student_id }}</td>
+              <td>{{ r.subject_name }}</td>
+              <td>{{ r.assignment.title if r.assignment else 'N/A' }}</td>
+              <td>
+                {% if r.file_name %}
+                  <a href="/submission/{{ r.file_name }}" target="_blank"
+                     style="color:#002855; text-decoration:none; margin-right:6px;">📄 View</a>
+                  <a href="/submission/{{ r.file_name }}?download=1"
+                     style="color:#555; text-decoration:none; font-size:0.85rem;">⬇ Download</a>
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
+              <td>{{ r.total_matches }}</td>
+              <td>{{ r.marks }}</td>
+              <td><span class="status-{{ (r.status or 'n/a')|lower }}">{{ r.status or 'N/A' }}</span></td>
+              <td><span class="on-time-{{ 'yes' if r.on_time else 'no' }}">{{ 'Yes' if r.on_time else 'No' }}</span></td>
+              <td>{{ r.evaluated_at.strftime('%Y-%m-%d %H:%M') if r.evaluated_at else 'N/A' }}</td>
+              <td><a href="{{ url_for('edit_theory_marks', class_id=class_id, result_id=r.id) }}">Edit Marks</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Script Assignments Tab -->
+      <div id="script-tab" class="tab-content">
+        <table>
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Subject</th>
+              <th>Assignment</th>
+              <th>Language</th>
+              <th>Test Cases</th>
+              <th>Marks</th>
+              <th>Status</th>
+              <th>On Time</th>
+              <th>Submitted At</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in script_results %}
+            <tr>
+              <td>{{ s.student_id }}</td>
+              <td>{{ s.subject_name }}</td>
+              <td>{{ s.script_assignment.title if s.script_assignment else 'N/A' }}</td>
+              <td>{{ s.language_used }}</td>
+              <td>{{ s.passed_test_cases }}/{{ s.total_test_cases }}</td>
+              <td>{{ s.marks_obtained }}/{{ s.total_marks }}</td>
+              <td><span class="status-{{ s.final_status.lower() }}">{{ s.final_status }}</span></td>
+              <td><span class="on-time-{{ 'yes' if s.is_on_time else 'no' }}">{{ 'Yes' if s.is_on_time else 'No' }}</span></td>
+              <td>{{ s.submission_time.strftime('%Y-%m-%d %H:%M') if s.submission_time else 'N/A' }}</td>
+              <td>
+                {% if s.compilation_status == 'SUCCESS' %}
+                  ✅ Compiled
+                {% else %}
+                  ❌ Compile Error
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Live Tests Tab -->
+      <div id="live-tab" class="tab-content">
+        <table>
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Subject</th>
+              <th>Live Test</th>
+              <th>Score</th>
+              <th>Status</th>
+              <th>Attempt State</th>
+              <th>Focus Lost</th>
+              <th>Submitted At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in live_results %}
+            <tr>
+              <td>{{ l.student_id }}</td>
+              <td>{{ l.subject_name }}</td>
+              <td>{{ l.assignment_title }}</td>
+              <td>{{ l.marks_obtained }}/{{ l.total_marks }}</td>
+              <td><span class="status-{{ l.status.lower() }}">{{ l.status }}</span></td>
+              <td>{{ l.attempt_status }}</td>
+              <td>{{ l.focus_lost_count }}</td>
+              <td>{{ l.submitted_at.strftime('%Y-%m-%d %H:%M') if l.submitted_at else 'N/A' }}</td>
+              <td>
+                {% if l.recording_path %}
+                  <a href="{{ url_for('live_test_recording', filename=l.recording_path) }}" target="_blank">Review</a>
+                  |
+                {% endif %}
+                <a href="{{ l.edit_url }}">Edit Marks</a>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="9">No live test attempts found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p>No evaluation results available yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function showTab(tabName) {
+  // Hide all tabs
+  const tabs = document.querySelectorAll('.tab-content');
+  tabs.forEach(tab => tab.classList.remove('active'));
+  
+  // Remove active class from all buttons
+  const buttons = document.querySelectorAll('.tab-button');
+  buttons.forEach(button => button.classList.remove('active'));
+  
+  // Show selected tab
+  document.getElementById(tabName + '-tab').classList.add('active');
+  
+  // Add active class to clicked button
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

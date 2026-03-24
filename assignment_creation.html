@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ subject.s_name }} – Create Assignment</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 2rem;
+    }
+    .form-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 600px;
+      margin: auto;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    input[type=text], textarea, select, input[type=number], input[type=datetime-local], input[type=file] {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 0.7rem 1.5rem;
+      background: #002855;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #004b93;
+    }
+    .upload-btn {
+      margin-top: 1rem;
+    }
+    .assignment-list {
+      margin-top: 3rem;
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .assignment {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    .add-btn {
+      display: inline-block;
+      margin-bottom: 1rem;
+      text-decoration: none;
+      background-color: #ff6600;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+    }
+    .add-btn:hover {
+      background-color: #e65c00;
+    }
+  </style>
+
+  <script>
+    function updateRubrics() {
+      const checkboxes = document.querySelectorAll('input[name="rubric_options"]:checked');
+      const selected = Array.from(checkboxes).map(cb => cb.value).join(', ');
+      document.getElementById('rubric-text').value = selected;
+    }
+
+    let testCaseCount = 1;
+    function addTestCase() {
+      testCaseCount++;
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <label>Test Case ${testCaseCount}</label>
+        <textarea name="test_input_${testCaseCount}" placeholder="Input ${testCaseCount}" rows="2"></textarea>
+        <textarea name="test_output_${testCaseCount}" placeholder="Expected Output ${testCaseCount}" rows="2"></textarea>
+      `;
+      document.getElementById('testcases-area').appendChild(div);
+    }
+  </script>
+</head>
+
+<body>
+
+  <!-- 🧠 THEORY ASSIGNMENT FORM -->
+  <div class="form-box">
+    <h2>Create Theory Assignment</h2>
+    <form method="POST" enctype="multipart/form-data">
+      <div class="form-group">
+        <label>Assignment Type</label>
+        <select name="type" required>
+          <option value="Theory">Theory</option>
+          <option value="Script">Script</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" name="title" placeholder="Assignment Title" required>
+      </div>
+      <div class="form-group">
+        <label>Deadline</label>
+        <input type="datetime-local" name="time" required>
+      </div>
+      <div class="form-group">
+        <label>Total Marks</label>
+        <input type="number" name="total_marks" required>
+      </div>
+      <div class="form-group">
+        <label>Add Questions</label>
+        <textarea name="questions" rows="4" placeholder="Write questions here..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Upload Question Document</label>
+        <input type="file" name="question_file" accept=".pdf,.doc,.docx">
+      </div>
+      <div class="form-group">
+        <label>Evaluation Rubrics</label>
+        <div>
+          <label><input type="checkbox" name="rubric_options" value="Keywords" onchange="updateRubrics()"> Keywords</label><br>
+          <label><input type="checkbox" name="rubric_options" value="Number of Words" onchange="updateRubrics()"> Number of Words</label><br>
+          <label><input type="checkbox" name="rubric_options" value="On Time Submission" onchange="updateRubrics()"> On Time Submission</label>
+        </div>
+        <textarea id="rubric-text" name="rubric" rows="3" placeholder="Auto-filled based on selection..." readonly></textarea>
+      </div>
+      <div class="form-group">
+        <label>Keywords</label>
+        <input type="text" name="keywords" placeholder="e.g., loop, AI, function">
+      </div>
+      <div class="upload-btn">
+        <button type="submit">Create Theory Assignment</button>
+      </div>
+    </form>
+  </div>
+
+  
+
+  <!-- 🗂 Existing Assignments -->
+  <div class="assignment-list">
+    <a href="/subject/{{ subject.sub_id }}/assignments/create" class="add-btn">➕ Add Assignment</a>
+    <h3>Existing Assignments</h3>
+    {% if subject.assignments %}
+      {% for a in subject.assignments %}
+        <div class="assignment">
+          <strong>{{ a.title }}</strong><br>
+          Type: {{ a.type }} | Total Marks: {{ a.total_marks }}<br>
+          Assigned: {{ a.timestamp.strftime("%Y-%m-%d %H:%M") }} | Deadline: {{ a.time }}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No assignments yet for this subject.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

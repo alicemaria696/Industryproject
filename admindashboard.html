@@ -1,0 +1,53 @@
+<!-- admin_dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Real-Time Assessment</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; display: flex; }
+    .sidebar {
+      width: 220px; background: #002855; color: white; height: 100vh; padding-top: 2rem; display: flex; flex-direction: column;
+    }
+    .sidebar a {
+      color: white; text-decoration: none; padding: 1rem 2rem; display: block;
+    }
+    .sidebar a:hover { background: #004b93; }
+    .main {
+      flex-grow: 1; background: #f4f6f8; padding: 2rem;
+    }
+    .top {
+      margin-bottom: 1rem;
+    }
+    .actions {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+    .action-card {
+      background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; cursor: pointer; transition: 0.3s;
+    }
+    .action-card:hover { background-color: #ff6600; color: white; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h3 style="text-align: center; color: white; margin-bottom: 2rem;">Admin Menu</h3>
+    <a href="/admindashboard">🏠 Dashboard</a>
+    <a href="/view_teachers">👨‍🏫 View Teachers</a>
+    <a href="/view_students">👨‍🎓 View Students</a>
+    <a href="/view_classes">🏫 View Classes</a>
+    <a href="/teacher_activity">📊 Teacher Activity</a>
+    <a href="/logout">🚪 Logout</a>
+  </div>
+  <div class="main">
+    <div class="top">
+      <h2>Admin Dashboard</h2>
+    </div>
+    <div class="actions">
+      <div class="action-card" onclick="window.location.href='/add_teacher'">➕ Add Teacher</div>
+      <div class="action-card" onclick="window.location.href='/add_student'">➕ Add Student</div>
+      <div class="action-card" onclick="window.location.href='/add_class'">➕ Add Class</div>
+      <div class="action-card" onclick="window.location.href='/assign_class'">🧩 Assign to Class</div>
+    </div>
+  </div>
+</body>
+</html>

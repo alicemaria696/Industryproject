@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Recordings – {{ test.title }}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; display: flex; font-family: Arial, sans-serif; background: #f4f6f8; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px; background: #002855; color: white;
+      min-height: 100vh; padding-top: 1rem; flex-shrink: 0;
+    }
+    .sidebar h3 { text-align: center; color: white; margin: 0 0 1.5rem; }
+    .sidebar a {
+      color: white; text-decoration: none; display: block;
+      padding: 0.9rem 1.5rem;
+    }
+    .sidebar a:hover { background: #004b93; }
+
+    /* ── Main ── */
+    .main { flex-grow: 1; padding: 2rem; overflow-y: auto; }
+    .page-header {
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+    }
+    .page-header h2 { margin: 0; flex-grow: 1; }
+    .back-btn {
+      text-decoration: none; background: #666; color: white;
+      padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.9rem;
+    }
+    .back-btn:hover { background: #444; }
+
+    /* ── Summary banner ── */
+    .summary-bar {
+      display: flex; gap: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .summary-card {
+      background: white; border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.1);
+      padding: 1rem 1.5rem; text-align: center; min-width: 130px;
+    }
+    .summary-card .num { font-size: 2rem; font-weight: bold; color: #002855; }
+    .summary-card .lbl { font-size: 0.82rem; color: #666; margin-top: 0.2rem; }
+
+    /* ── Student recording cards ── */
+    .student-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .student-card {
+      background: white; border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.1); overflow: hidden;
+    }
+    .student-card-header {
+      background: #002855; color: white;
+      padding: 0.7rem 1rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .student-card-header .sid { font-weight: bold; font-size: 1rem; }
+    .student-card-header .meta { font-size: 0.78rem; opacity: .8; margin-left: auto; }
+    .student-card-body { padding: 1rem; }
+
+    video.recording-player {
+      width: 100%; border-radius: 6px; background: #000;
+      max-height: 200px; display: block; margin-bottom: 0.75rem;
+    }
+    .no-recording {
+      text-align: center; color: #aaa; padding: 2rem 0; font-size: 0.9rem;
+    }
+    .action-row { display: flex; gap: 0.6rem; }
+    .btn {
+      flex: 1; text-align: center; text-decoration: none;
+      padding: 0.5rem 0; border-radius: 6px; font-size: 0.88rem; font-weight: bold;
+    }
+    .btn-view  { background: #e8f0fe; color: #002855; border: 1px solid #c5d8ff; }
+    .btn-view:hover  { background: #c5d8ff; }
+    .btn-dl    { background: #fff3e0; color: #e65c00; border: 1px solid #ffd0a0; }
+    .btn-dl:hover    { background: #ffd0a0; }
+
+    .info-row { display: flex; gap: 1rem; margin-top: 0.75rem; font-size: 0.82rem; color: #555; }
+    .info-item { display: flex; flex-direction: column; }
+    .info-item span:first-child { color: #888; }
+    .info-item span:last-child  { font-weight: bold; color: #222; }
+
+    /* no-attempts state */
+    .empty-state {
+      background: white; border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.1);
+      padding: 3rem; text-align: center; color: #888;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <h3>Teacher Dashboard</h3>
+  <a href="/teacherdashboard">🏠 Dashboard</a>
+  <a href="{{ url_for('live_test_attempts', test_id=test.id) }}">📋 All Attempts</a>
+  <a href="/logout">🚪 Logout</a>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <div class="page-header">
+    <a href="{{ url_for('live_test_attempts', test_id=test.id) }}" class="back-btn">← Back to Attempts</a>
+    <h2>📹 Recordings — {{ test.title }}</h2>
+  </div>
+
+  {% set total     = attempts | length %}
+  {% set recorded  = attempts | selectattr('recording_path') | list | length %}
+  {% set missing   = total - recorded %}
+
+  <div class="summary-bar">
+    <div class="summary-card">
+      <div class="num">{{ total }}</div>
+      <div class="lbl">Total Attempts</div>
+    </div>
+    <div class="summary-card">
+      <div class="num" style="color:#28a745;">{{ recorded }}</div>
+      <div class="lbl">Recordings Saved</div>
+    </div>
+    <div class="summary-card">
+      <div class="num" style="color:#dc3545;">{{ missing }}</div>
+      <div class="lbl">No Recording</div>
+    </div>
+  </div>
+
+  {% if attempts %}
+    <div class="student-grid">
+      {% for attempt in attempts %}
+      <div class="student-card">
+        <div class="student-card-header">
+          <span>👤</span>
+          <span class="sid">{{ attempt.student_id }}</span>
+          <span class="meta"
+            style="color:{% if attempt.status in ('SUBMITTED','TIME_EXPIRED') %}#90ee90{% else %}#ffd580{% endif %};">
+            {{ attempt.status }}
+          </span>
+        </div>
+        <div class="student-card-body">
+
+          {% if attempt.recording_path %}
+            <!-- Inline video preview -->
+            <video
+              class="recording-player"
+              controls
+              preload="metadata"
+              src="{{ url_for('live_test_recording', filename=attempt.recording_path) }}"
+            ></video>
+
+            <div class="action-row">
+              <a href="{{ url_for('live_test_recording', filename=attempt.recording_path) }}"
+                 target="_blank" class="btn btn-view">▶ View</a>
+              <a href="{{ url_for('live_test_recording', filename=attempt.recording_path, download='1') }}"
+                 class="btn btn-dl">⬇ Download</a>
+            </div>
+          {% else %}
+            <div class="no-recording">🚫 No recording available</div>
+          {% endif %}
+
+          <div class="info-row">
+            <div class="info-item">
+              <span>Started</span>
+              <span>{{ attempt.started_at.strftime('%d %b %Y %H:%M') if attempt.started_at else '—' }}</span>
+            </div>
+            <div class="info-item">
+              <span>Tab switches</span>
+              <span>{{ attempt.focus_lost_count or 0 }}</span>
+            </div>
+            <div class="info-item">
+              <span>Proctor events</span>
+              <span>{{ attempt.proctor_events | length if attempt.proctor_events else 0 }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="empty-state">
+      <p style="font-size:3rem;">📭</p>
+      <p>No attempts have been made on this live test yet.</p>
+    </div>
+  {% endif %}
+
+</div>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reports Dashboard</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; display: flex; background: #f4f6f8; }
+    .sidebar {
+      width: 240px;
+      background: #002855;
+      color: white;
+      min-height: 100vh;
+      padding-top: 1rem;
+    }
+    .sidebar h3 { text-align: center; margin-bottom: 1.5rem; }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      padding: 0.9rem 1.4rem;
+    }
+    .sidebar a:hover { background: #004b93; }
+    .main { flex-grow: 1; padding: 2rem; }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+    .metric {
+      background: white;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .metric h4 { margin: 0 0 0.5rem 0; color: #002855; }
+    .metric p { margin: 0; font-size: 1.1rem; font-weight: bold; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th { background: #002855; color: white; }
+    tr:hover { background: #f7f9fb; }
+    .muted { color: #666; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  {% if is_teacher_view %}
+  <div class="sidebar">
+    <h3>👨‍🏫 Teacher Dashboard</h3>
+    <a href="{{ url_for('home') }}">🏠 Dashboard</a>
+    <a href="{{ url_for('student_performance', class_id=class_id) }}">📊 Student Performance</a>
+    <a href="{{ url_for('teacher_reports', class_id=class_id) }}">📈 Reports</a>
+    <a href="{{ url_for('view_students_by_class', class_id=class_id) }}">👨‍🎓 View Students</a>
+
+    <h4 style="text-align:center; color:#ffcc00; margin-top:1.5rem;">📚 Subjects</h4>
+    {% for sub in subjects %}
+      <a href="{{ url_for('subject_assignments', sub_id=sub.sub_id) }}">{{ sub.s_name }}</a>
+    {% else %}
+      <p style="padding: 0 1.2rem;">No subjects</p>
+    {% endfor %}
+
+    <a href="/logout">🚪 Logout</a>
+  </div>
+
+  <div class="main">
+    <h2>Reports Dashboard - {{ class_name }}</h2>
+    <p class="muted">Progress based on theory, script, and live test outcomes.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Name</th>
+          <th>Theory</th>
+          <th>Script</th>
+          <th>Live Test</th>
+          <th>Overall</th>
+          <th>Progress %</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in progress_rows %}
+        <tr>
+          <td>{{ row.student_id }}</td>
+          <td>{{ row.student_name }}</td>
+          <td>{{ row.theory_obtained }}/{{ row.theory_total }}</td>
+          <td>{{ row.script_obtained }}/{{ row.script_total }}</td>
+          <td>{{ row.live_obtained }}/{{ row.live_total }}</td>
+          <td>{{ row.overall_obtained }}/{{ row.overall_total }}</td>
+          <td>{{ row.overall_percent }}%</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="sidebar">
+    <h3>🎓 Student Dashboard</h3>
+    <a href="{{ url_for('student_dashboard') }}">🏠 Assignments</a>
+    <a href="{{ url_for('student_reports') }}">📈 Reports</a>
+    <a href="/logout">🚪 Logout</a>
+  </div>
+
+  <div class="main">
+    <h2>My Progress Report</h2>
+    <p class="muted">Consolidated view of theory, script, and live test performance.</p>
+
+    <div class="metrics">
+      <div class="metric">
+        <h4>Theory</h4>
+        <p>{{ theory_obtained }}/{{ theory_total }}</p>
+      </div>
+      <div class="metric">
+        <h4>Script</h4>
+        <p>{{ script_obtained }}/{{ script_total }}</p>
+      </div>
+      <div class="metric">
+        <h4>Live Test</h4>
+        <p>{{ live_obtained }}/{{ live_total }}</p>
+      </div>
+      <div class="metric">
+        <h4>Overall</h4>
+        <p>{{ overall_obtained }}/{{ overall_total }} ({{ overall_percent }}%)</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <strong>Student:</strong> {{ student.name }} ({{ student.reg_id }})
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Subject</th>
+          <th>Assessment</th>
+          <th>Score</th>
+          <th>Status</th>
+          <th>Submitted At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in detail_rows %}
+        <tr>
+          <td>{{ row.category }}</td>
+          <td>{{ row.subject_name }}</td>
+          <td>{{ row.assessment_name }}</td>
+          <td>{{ row.obtained }}/{{ row.total }}</td>
+          <td>{{ row.status }}</td>
+          <td>{{ row.submitted_at.strftime('%Y-%m-%d %H:%M') if row.submitted_at else 'N/A' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</body>
+</html>

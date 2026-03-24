@@ -1,0 +1,55 @@
+<!-- dashboard.html -->
+ <!--Teacher dashboard not used!-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Real-Time Assessment</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; display: flex; }
+    .sidebar {
+      width: 200px; background: #002855; color: white; height: 100vh; padding-top: 2rem; display: flex; flex-direction: column;
+    }
+    .sidebar a {
+      color: white; text-decoration: none; padding: 1rem 2rem; display: block;
+    }
+    .sidebar a:hover { background: #004b93; }
+    .main {
+      flex-grow: 1; background: #f4f6f8; padding: 2rem;
+    }
+    .top {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
+    }
+    .assignments {
+      display: grid; grid-template-columns: 1fr; gap: 1rem;
+    }
+    .assignment {
+      background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .plus-btn {
+      background: #ff6600; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;
+    }
+    .plus-btn:hover { background: #e65c00; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <a href="#">🏠 Dashboard</a>
+    <a href="#">📊 Student Performance</a>
+    <a href="#">📝 Score</a>
+  </div>
+  <div class="main">
+    <div class="top">
+      <h2>MCA A Assignments</h2>
+      <a href="{{ url_for('assignment_creation') }}"><button class="plus-btn">➕ Add Assignment</button></a>
+
+    </div>
+    <div class="assignments">
+      <div class="assignment">Assignment 1 - 2025-05-10</div>
+      <div class="assignment">Assignment 2 - 2025-06-01</div>
+      <div class="assignment">Assignment 3 - 2025-06-10</div>
+    </div>
+  </div>
+</body>
+</html>

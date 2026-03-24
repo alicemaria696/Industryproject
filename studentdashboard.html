@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Dashboard | Real-Time Assessment</title>
+  <style>
+    body { 
+      margin: 0; 
+      font-family: Arial, sans-serif; 
+      display: flex; 
+      background: #f4f6f8;
+    }
+    
+    .sidebar {
+      width: 250px; 
+      background: #002855; 
+      color: white; 
+      height: 100vh;
+      padding: 0;
+      display: flex; 
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar h3 {
+      text-align: center; 
+      color: white; 
+      margin: 0;
+      padding: 2rem 1rem 1rem 1rem;
+      background: #001a3d;
+      border-bottom: 1px solid #004b93;
+    }
+    
+    .sidebar-content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 0;
+    }
+    
+    .subjects-section {
+      flex-grow: 1;
+    }
+    
+    .subjects-section h4 {
+      color: #a8b3c7;
+      font-size: 12px;
+      text-transform: uppercase;
+      margin: 1rem 2rem 0.5rem 2rem;
+      letter-spacing: 1px;
+    }
+    
+    .sidebar a {
+      color: white; 
+      text-decoration: none; 
+      padding: 0.75rem 2rem; 
+      display: block;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+      cursor: pointer;
+    }
+    
+    .sidebar a:hover { 
+      background: #004b93; 
+      border-left-color: #0066cc;
+    }
+    
+    .sidebar a.active {
+      background: #004b93;
+      border-left-color: #28a745;
+      font-weight: bold;
+    }
+    
+    .logout-section {
+      border-top: 1px solid #004b93;
+      padding: 1rem 0;
+    }
+    
+    .main {
+      margin-left: 250px;
+      flex-grow: 1; 
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    
+    .top { 
+      margin-bottom: 2rem;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .welcome-message {
+      background: linear-gradient(135deg, #002855 0%, #004b93 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .assignments {
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+      gap: 1.5rem;
+    }
+    
+    .assignment {
+      background: white; 
+      padding: 1.5rem; 
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-left: 4px solid #dee2e6;
+    }
+    
+    .assignment:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .script-assignment {
+      border-left-color: #28a745;
+    }
+
+    .live-assignment {
+      border-left-color: #dc3545;
+    }
+    
+    .assignment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    
+    .assignment-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #002855;
+    }
+    
+    .assignment-badge {
+      background: #28a745; 
+      color: white; 
+      padding: 4px 12px; 
+      border-radius: 12px; 
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .assignment-badge.live {
+      background: #dc3545;
+    }
+    
+    .assignment-meta {
+      color: #6c757d;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+    
+    .assignment-question {
+      color: #495057;
+      line-height: 1.6;
+      border-top: 1px solid #dee2e6;
+      padding-top: 1rem;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #6c757d;
+    }
+    
+    .empty-state h3 {
+      color: #002855;
+      margin-bottom: 1rem;
+    }
+    
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 1000; 
+      left: 0; 
+      top: 0;
+      width: 100%; 
+      height: 100%; 
+      background: rgba(0,0,0,0.5);
+      justify-content: center; 
+      align-items: center;
+    }
+    
+    .modal-content {
+      background: white; 
+      padding: 2rem; 
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+      width: 90%;
+      max-width: 900px; 
+      max-height: 90%; 
+      overflow-y: auto;
+      text-align: left;
+    }
+    
+    .modal-content h3 { 
+      margin-bottom: 1.5rem; 
+      text-align: center; 
+      color: #002855;
+      border-bottom: 2px solid #dee2e6;
+      padding-bottom: 1rem;
+    }
+    
+    .code-editor {
+      width: 100%; 
+      height: 350px; 
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 14px; 
+      border: 1px solid #ddd; 
+      border-radius: 6px;
+      padding: 1rem; 
+      resize: vertical;
+      background: #f8f9fa;
+    }
+    
+    .button {
+      background: #002855; 
+      color: white; 
+      padding: 10px 20px;
+      border: none; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      margin: 5px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    
+    .button:hover { 
+      background: #004b93; 
+      transform: translateY(-1px);
+    }
+    
+    .button.success { background: #28a745; }
+    .button.success:hover { background: #218838; }
+    
+    .button.danger { background: #dc3545; }
+    .button.danger:hover { background: #c82333; }
+    
+    .close-btn { background: #6c757d; margin-top: 15px; }
+    .close-btn:hover { background: #5a6268; }
+    
+    .test-results {
+      margin-top: 20px; 
+      max-height: 300px; 
+      overflow-y: auto;
+    }
+    
+    .test-case {
+      padding: 1rem; 
+      margin: 8px 0; 
+      border-radius: 6px; 
+      font-size: 13px;
+      border: 1px solid;
+    }
+    
+    .test-case.passed { 
+      background: #d4edda; 
+      border-color: #c3e6cb; 
+      color: #155724;
+    }
+    
+    .test-case.failed { 
+      background: #f8d7da; 
+      border-color: #f5c6cb;
+      color: #721c24;
+    }
+    
+    .test-case.hidden { opacity: 0.7; }
+    
+    .marks-breakdown {
+      background: #f8f9fa; 
+      padding: 1.5rem; 
+      border-radius: 6px; 
+      margin: 15px 0;
+      border: 1px solid #dee2e6;
+    }
+    
+    .marks-item {
+      display: flex; 
+      justify-content: space-between; 
+      margin: 8px 0;
+      padding: 4px 0;
+    }
+    
+    .compilation-error {
+      background: #f8d7da; 
+      padding: 1rem; 
+      border-radius: 6px;
+      font-family: monospace; 
+      font-size: 12px; 
+      white-space: pre-wrap;
+      max-height: 200px; 
+      overflow-y: auto;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    
+    .template-section {
+      background: #e9ecef; 
+      padding: 1.5rem; 
+      border-radius: 6px; 
+      margin: 15px 0;
+    }
+    
+    .template-code {
+      background: #f8f9fa; 
+      padding: 1rem; 
+      border-radius: 4px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; 
+      font-size: 12px;
+      white-space: pre-wrap; 
+      border: 1px solid #dee2e6;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #6c757d;
+    }
+    
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #dee2e6;
+      border-top-color: #002855;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h3>Student Dashboard</h3>
+    <div class="sidebar-content">
+      <div class="subjects-section">
+        <h4>Subjects</h4>
+        <div id="subjectsList">
+          <!-- Subjects will be loaded here -->
+        </div>
+      </div>
+      <div class="logout-section">
+        <a href="{{ url_for('student_reports') }}">📈 Reports</a>
+        <a href="/logout">🚪 Logout</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="welcome-message" id="welcomeMessage">
+      <h2>Welcome to Your Dashboard</h2>
+      <p>Select a subject from the sidebar to view your assignments</p>
+    </div>
+    
+    <div class="top" id="assignmentsHeader" style="display: none;">
+      <h2 id="currentSubject">Assignments</h2>
+    </div>
+    
+    <div id="assignmentsContainer">
+      <!-- Assignments will be loaded here -->
+    </div>
+  </div>
+
+  <!-- Regular Assignment Upload Modal -->
+  <div class="modal" id="uploadModal">
+    <div class="modal-content">
+      <h3 id="assignmentTitle">Upload Submission</h3>
+      <form id="evalForm" enctype="multipart/form-data">
+        <div style="margin-bottom: 1rem;">
+          <label for="fileInput" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Choose File:</label>
+          <input type="file" id="fileInput" name="document" accept=".zip,.pdf,.doc,.docx,.py,.cpp,.java,.c,.js,.txt" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;" />
+        </div>
+        <input type="hidden" name="assignment_id" id="modalAssignmentId">
+        <input type="hidden" name="subject_name" id="modalSubject">
+        <input type="hidden" name="assignment_title" id="modalTitle">
+        <input type="hidden" name="assignment_type" id="modalType">
+        <button type="submit" class="button">Submit for Evaluation</button>
+      </form>
+      <div id="resultBox"></div>
+      <button class="button close-btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Script Assignment Modal -->
+  <div class="modal" id="scriptModal">
+    <div class="modal-content">
+      <h3 id="scriptTitle">Code Submission</h3>
+      
+      <div class="template-section" id="templateSection" style="display: none;">
+        <h4>Template Code:</h4>
+        <div class="template-code" id="templateCode"></div>
+        <button type="button" class="button" onclick="useTemplate()">Use Template</button>
+      </div>
+      
+      <form id="scriptForm">
+        <label for="codeEditor"><strong>Your Code:</strong></label>
+        <textarea id="codeEditor" class="code-editor" placeholder="Write your code here..."></textarea>
+        
+        <input type="hidden" name="script_assignment_id" id="scriptAssignmentId">
+        
+        <div style="text-align: center; margin: 20px 0;">
+          <button type="button" class="button" onclick="runCode()">▶️ Run Code</button>
+          <button type="button" class="button success" onclick="submitCode()">✅ Submit Solution</button>
+          <button type="button" class="button close-btn" onclick="closeScriptModal()">Cancel</button>
+        </div>
+      </form>
+      
+      <div id="scriptResults"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentScriptAssignment = null;
+    let allAssignments = [];
+    let uniqueSubjects = [];
+    let currentSelectedSubject = null;
+
+    // Initialize the dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      loadSubjects();
+    });
+
+    // Load subjects from database
+    async function loadSubjects() {
+      try {
+        const response = await fetch('/get_student_subjects');
+        const data = await response.json();
+        
+        if (data.subjects) {
+          uniqueSubjects = data.subjects.map(s => ({
+            sub_id: s.sub_id,
+            s_name: s.s_name
+          }));
+          renderSubjects();
+        } else {
+          console.error('No subjects found for student');
+        }
+      } catch (error) {
+        console.error('Error loading subjects:', error);
+        document.getElementById('subjectsList').innerHTML = 
+          '<div style="padding: 1rem; color: #dc3545;">Error loading subjects</div>';
+      }
+    }
+
+    function renderSubjects() {
+      const subjectsList = document.getElementById('subjectsList');
+      subjectsList.innerHTML = '';
+      
+      uniqueSubjects.forEach(subject => {
+        const link = document.createElement('a');
+        link.textContent = subject.s_name;
+        link.onclick = (e) => loadSubjectAssignments(e, subject.sub_id, subject.s_name);
+        subjectsList.appendChild(link);
+      });
+    }
+
+    function loadSubjectAssignments(evt, subId, subjectName) {
+      // Update active state
+      document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+      if (evt && evt.target) {
+        evt.target.classList.add('active');
+      }
+      
+      currentSelectedSubject = subjectName;
+      
+      // Hide welcome message and show assignments header
+      document.getElementById('welcomeMessage').style.display = 'none';
+      document.getElementById('assignmentsHeader').style.display = 'block';
+      document.getElementById('currentSubject').textContent = `${subjectName} Assignments`;
+      
+      // Show loading
+      document.getElementById('assignmentsContainer').innerHTML = '<div class="loading">Loading assignments...</div>';
+      
+      // Fetch assignments for this subject
+      fetchSubjectAssignments(subId);
+    }
+
+    async function fetchSubjectAssignments(subId) {
+      try {
+        const response = await fetch(`/get_subject_assignments/${subId}`);
+        const data = await response.json();
+        
+        if (data.assignments) {
+          renderAssignments(data.assignments);
+        } else {
+          renderAssignments([]);
+        }
+      } catch (error) {
+        console.error('Error fetching assignments:', error);
+        document.getElementById('assignmentsContainer').innerHTML = 
+          '<div class="empty-state"><h3>Error</h3><p>Failed to load assignments. Please try again.</p></div>';
+      }
+    }
+
+    function renderAssignments(assignments) {
+      const container = document.getElementById('assignmentsContainer');
+      
+      if (assignments.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h3>No assignments found</h3>
+            <p>There are currently no assignments for ${currentSelectedSubject}.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div class="assignments">';
+      
+      assignments.forEach(a => {
+        const isScript = a.type && a.type.toLowerCase() === 'script';
+        const isLive = a.type && a.type.toLowerCase() === 'live';
+        html += `
+          <div class="assignment ${isScript ? 'script-assignment' : ''} ${isLive ? 'live-assignment' : ''}" 
+            onclick="openModal('${a.assignment_id}', '${currentSelectedSubject}', '${a.title}', '${a.type}')">
+            <div class="assignment-header">
+              <div class="assignment-title">${a.title}</div>
+              ${isLive ? '<span class="assignment-badge live">LIVE</span>' : (isScript ? '<span class="assignment-badge">CODING</span>' : '')}
+            </div>
+            <div class="assignment-meta">
+              <div><strong>Type:</strong> ${a.type}</div>
+              <div><strong>Total Marks:</strong> ${a.total_marks}</div>
+              <div><strong>Deadline:</strong> ${a.time}</div>
+              <div><strong>Assigned:</strong> ${a.timestamp}</div>
+            </div>
+            <div class="assignment-question">
+              <strong>Question:</strong> ${a.questions}
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      container.innerHTML = html;
+    }
+    
+    function openModal(assignmentId, subject, title, type) {
+      if (type && type.trim().toLowerCase() === 'live') {
+        window.location.href = `/live_test/${assignmentId}/start`;
+        return;
+      }
+      if (type && type.trim().toLowerCase() === 'script') {
+        openScriptModal(assignmentId, subject, title);
+      } else {
+        document.getElementById('assignmentTitle').innerText = `Submit: ${subject} - ${title}`;
+        document.getElementById('modalAssignmentId').value = assignmentId;
+        document.getElementById('modalSubject').value = subject;
+        document.getElementById('modalTitle').value = title;
+        document.getElementById('modalType').value = type;
+        document.getElementById('uploadModal').style.display = 'flex';
+      }
+    }
+
+    async function openScriptModal(assignmentId, subject, title) {
+      document.getElementById('scriptTitle').innerText = `Code: ${subject} - ${title}`;
+      document.getElementById('scriptAssignmentId').value = assignmentId;
+      currentScriptAssignment = { id: assignmentId, subject, title };
+      
+      // Load template code if available
+      try {
+        const response = await fetch(`/get_script_template/${assignmentId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.template_code) {
+            document.getElementById('templateCode').textContent = data.template_code;
+            document.getElementById('templateSection').style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.log('Could not load template:', error);
+      }
+      
+      document.getElementById('scriptModal').style.display = 'flex';
+      document.getElementById('codeEditor').focus();
+    }
+
+    function useTemplate() {
+      const templateCode = document.getElementById('templateCode').textContent;
+      document.getElementById('codeEditor').value = templateCode;
+    }
+
+    function closeModal() {
+      document.getElementById('uploadModal').style.display = 'none';
+      document.getElementById('resultBox').innerHTML = '';
+      document.getElementById('evalForm').reset();
+    }
+
+    function closeScriptModal() {
+      document.getElementById('scriptModal').style.display = 'none';
+      document.getElementById('scriptResults').innerHTML = '';
+      document.getElementById('codeEditor').value = '';
+      document.getElementById('templateSection').style.display = 'none';
+      currentScriptAssignment = null;
+    }
+
+    async function runCode() {
+      const code = document.getElementById('codeEditor').value.trim();
+      if (!code) {
+        alert('Please enter some code first!');
+        return;
+      }
+
+      const assignmentId = document.getElementById('scriptAssignmentId').value;
+      
+      document.getElementById('scriptResults').innerHTML = '<div style="text-align: center; padding: 20px;">🔄 Running code...</div>';
+
+      try {
+        const response = await fetch('/evaluate_script', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            assignment_id: assignmentId,
+            student_code: code,
+            test_mode: true  // Only run visible test cases
+          })
+        });
+
+        const result = await response.json();
+        displayScriptResults(result, false);
+      } catch (error) {
+        document.getElementById('scriptResults').innerHTML = 
+          `<div style="color: red; padding: 10px;">❌ Error: ${error.message}</div>`;
+      }
+    }
+
+    async function submitCode() {
+      const code = document.getElementById('codeEditor').value.trim();
+      if (!code) {
+        alert('Please enter some code first!');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to submit this solution? This will run against all test cases including hidden ones.')) {
+        return;
+      }
+
+      const assignmentId = document.getElementById('scriptAssignmentId').value;
+      
+      document.getElementById('scriptResults').innerHTML = '<div style="text-align: center; padding: 20px;">⚡ Evaluating submission...</div>';
+
+      try {
+        const response = await fetch('/evaluate_script', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            assignment_id: assignmentId,
+            student_code: code
+          })
+        });
+
+        const result = await response.json();
+        displayScriptResults(result, true);
+      } catch (error) {
+        document.getElementById('scriptResults').innerHTML = 
+          `<div style="color: red; padding: 10px;">❌ Error: ${error.message}</div>`;
+      }
+    }
+
+    function displayScriptResults(result, isSubmission) {
+      let html = `<h4>${isSubmission ? 'Submission Results' : 'Test Results'}</h4>`;
+      
+      // Compilation status
+      if (result.compilation_status === 'FAILED') {
+        html += `
+          <div style="color: red; margin: 10px 0;">
+            <strong>❌ Compilation Failed</strong>
+          </div>
+          <div class="compilation-error">${result.compilation_error || 'Unknown compilation error'}</div>
+        `;
+      } else {
+        html += `<div style="color: green; margin: 10px 0;"><strong>✅ Compilation Successful</strong></div>`;
+      }
+
+      // Marks breakdown
+      if (result.marks_breakdown) {
+        html += `
+          <div class="marks-breakdown">
+            <h5>Marks Breakdown:</h5>
+            <div class="marks-item">
+              <span>Deadline (30%):</span>
+              <span>${result.marks_breakdown.deadline_marks}/30</span>
+            </div>
+            <div class="marks-item">
+              <span>Compilation (20%):</span>
+              <span>${result.marks_breakdown.compilation_marks}/20</span>
+            </div>
+            <div class="marks-item">
+              <span>Test Cases (50%):</span>
+              <span>${result.marks_breakdown.testcase_marks}/50</span>
+            </div>
+            <div class="marks-item" style="font-weight: bold; border-top: 1px solid #dee2e6; padding-top: 5px;">
+              <span>Total:</span>
+              <span>${result.marks}/100</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // Test case results
+      if (result.test_results && result.test_results.length > 0) {
+        html += `<div class="test-results"><h5>Test Cases:</h5>`;
+        
+        result.test_results.forEach(test => {
+          const statusClass = test.status === 'PASSED' ? 'passed' : 'failed';
+          const hiddenClass = test.expected === 'Hidden' ? 'hidden' : '';
+          
+          html += `
+            <div class="test-case ${statusClass} ${hiddenClass}">
+              <strong>Test ${test.index}: ${test.status}</strong>
+              <div>Expected: <code>${test.expected}</code></div>
+              <div>Got: <code>${test.actual}</code></div>
+              ${test.error ? `<div style="color: red; font-size: 11px;">Error: ${test.error}</div>` : ''}
+            </div>
+          `;
+        });
+        
+        html += `</div>`;
+      }
+
+      // Final status
+      const statusColor = result.status === 'PASS' ? 'green' : 'red';
+      html += `
+        <div style="text-align: center; margin: 20px 0; padding: 15px; 
+                    background: ${result.status === 'PASS' ? '#d4edda' : '#f8d7da'}; 
+                    border-radius: 5px; color: ${statusColor};">
+          <strong>${result.status === 'PASS' ? '🎉' : '💪'} ${result.message}</strong>
+        </div>
+      `;
+
+      document.getElementById('scriptResults').innerHTML = html;
+    }
+
+    // Regular assignment evaluation (existing code)
+    document.getElementById('evalForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const assignmentType = formData.get("assignment_type");
+      const file = formData.get("document");
+
+      if (assignmentType && assignmentType.trim().toLowerCase() === 'script') {
+        const filename = file.name.toLowerCase();
+        const extension = filename.split('.').pop();
+
+        const reader = new FileReader();
+        reader.onload = async function (evt) {
+          const sourceCode = evt.target.result;
+          const languageId = extension === 'c' ? 50 : 
+                            extension === 'cpp' ? 54 :
+                            extension === 'java' ? 62 : 
+                            extension === 'py' ? 71 : 50;
+
+          const response = await fetch("https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "X-RapidAPI-Key": "7d2f3e542amshe0fc0fe7f077e94p1e5b46jsn07418d37bf0f",
+              "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com"
+            },
+            body: JSON.stringify({
+              language_id: languageId,
+              source_code: sourceCode
+            })
+          });
+
+          const judgeResult = await response.json();
+          const compilation_success = judgeResult.status && judgeResult.status.id === 3;
+          
+          if (!compilation_success) {
+            document.getElementById('resultBox').innerHTML += `
+              <br><strong>Error:</strong><br>
+              ${judgeResult.stderr || judgeResult.compile_output || "Unknown error."}
+            `;
+          }
+          
+          const backendResponse = await fetch("/evaluate_script", {
+            method: "POST",
+            body: JSON.stringify({
+              compilation_success: compilation_success,
+              assignment_id: formData.get("assignment_id")
+            }),
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          const result = await backendResponse.json();
+          document.getElementById('resultBox').innerHTML = `
+            <strong>Script Compilation Result:</strong><br>
+            ${result.message}<br>
+            Marks: ${result.marks}<br>
+          `;
+        };
+
+        reader.readAsText(file);
+      } else {
+        const response = await fetch("/evaluate_submission", {
+          method: "POST",
+          body: formData
+        });
+        const result = await response.json();
+        if (result.error) {
+          document.getElementById('resultBox').innerHTML = `<p style="color:red;">${result.error}</p>`;
+        } else {
+          document.getElementById('resultBox').innerHTML = `
+            <strong>Evaluation Result:</strong><br>
+            Title: ${result.title}<br>
+            Keyword Matches: ${result.matches}<br>
+            Marks: ${result.marks}<br>
+            Status: <b>${result.status}</b><br>
+            On Time: ${result.on_time ? "✅ Yes" : "❌ Late"}
+          `;
+        }
+      }
+    });
+
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+      const uploadModal = document.getElementById('uploadModal');
+      const scriptModal = document.getElementById('scriptModal');
+      
+      if (event.target === uploadModal) {
+        closeModal();
+      }
+      if (event.target === scriptModal) {
+        closeScriptModal();
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Real-Time Assessment - CHRIST University</title>
+  <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      background: linear-gradient(-45deg, #004b93, #002855, #0077b6, #00b4d8);
+      background-size: 400% 400%;
+      animation: gradientMove 15s ease infinite;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .left-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      position: relative;
+    }
+
+    .logo-container {
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .logo {
+      width: 120px;
+      height: 120px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      border: 4px solid rgba(255, 255, 255, 0.9);
+    }
+
+    .logo-text {
+      font-size: 28px;
+      font-weight: bold;
+      color: #002855;
+      letter-spacing: 2px;
+    }
+
+    .university-name {
+      color: white;
+      font-size: 24px;
+      font-weight: 300;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .tagline {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 16px;
+      margin-bottom: 40px;
+      text-align: center;
+      max-width: 300px;
+      max-height: 200px;
+      line-height: 1.5;
+    }
+
+    .carousel-container {
+      width: 100%;
+      max-width: 600px;
+      max-height: 700px;
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .carousel-title {
+      color: white;
+      font-size: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .carousel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 10px;
+      height: 400px;
+      width: 550px;
+    }
+
+    .carousel-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.5s ease-in-out;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .carousel-slide.active {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .carousel-slide.prev {
+      transform: translateX(-100%);
+    }
+
+    .module-image {
+      width: 380px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: 2px solid #e1e5e9;
+      transition: transform 0.3s ease;
+    }
+
+    .module-image:hover {
+      transform: scale(1.05);
+    }
+
+    .module-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #002855;
+      margin-bottom: 10px;
+    }
+
+    .module-description {
+      text-align: center;
+      color: #666;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .carousel-indicators {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    .indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .indicator.active {
+      background: white;
+      transform: scale(1.2);
+    }
+
+    .right-section {
+      flex: 0 0 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+
+    .login-box {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 350px;
+      transition: transform 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .login-box:hover {
+      transform: translateY(-5px);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .login-title {
+      font-size: 28px;
+      color: #002855;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .login-subtitle {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #002855;
+      font-weight: 500;
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e1e5e9;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    input[type="text"]:focus, input[type="password"]:focus {
+      outline: none;
+      border-color: #0077b6;
+      box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1);
+    }
+
+    .login-button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #002855, #004b93);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      margin-top: 20px;
+    }
+
+    .login-button:hover {
+      background: linear-gradient(135deg, #004b93, #0077b6);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 75, 147, 0.3);
+    }
+
+    .features {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 30px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 12px;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      
+      .left-section {
+        padding: 20px;
+      }
+      
+      .right-section {
+        flex: none;
+        padding: 20px;
+      }
+      
+      .carousel-container{
+        margin-bottom: 30px;
+      }
+
+      .features {
+        position: static;
+        transform: none;
+        justify-content: center;
+        margin-top: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+   <div class="container">
+    <div class="left-section">
+      <div class="logo-container">
+        <div class="logo">
+          <img src="{{ url_for('static', filename='p7.webp') }}" alt="CHRIST University Logo" class="logo-image">
+        </div>
+        <div class="university-name">CHRIST University</div>
+        <div class="tagline">
+          Advanced Real-Time Assessment Platform<br>
+          Reducing Faculty Intervention • Instant Evaluation
+        </div>
+      </div>
+
+      <div class="carousel-container">
+        <div class="carousel-title">Platform Modules</div>
+        <div class="carousel">
+          <div class="carousel-slide active">
+            <img src="{{ url_for('static', filename='p1.webp') }}" alt="Admin Dashboard" class="module-image">
+            <div class="module-title">Admin Module</div>
+            <div class="module-description">
+              Complete administrative control with teacher management, student oversight, class organization, and comprehensive activity monitoring for seamless academic operations.
+            </div>
+          </div>
+          
+          <div class="carousel-slide">
+            <img src="{{ url_for('static', filename='p3.webp') }}" alt="Teacher Dashboard" class="module-image">
+            <div class="module-title">Teacher Module</div>
+            <div class="module-description">
+              Create and manage assignments, both theoretical and coding-based. Real-time automated evaluation with instant feedback and performance analytics for students.
+            </div>
+          </div>
+          
+          <div class="carousel-slide">
+            <img src="{{ url_for('static', filename='p4.webp') }}" alt="Student Dashboard" class="module-image">
+            <div class="module-title">Student Module</div>
+            <div class="module-description">
+              Access assignments, submit solutions with integrated code editor, receive instant feedback, and track progress across multiple programming languages and subjects.
+            </div>
+          </div>
+        </div>
+        
+        <div class="carousel-indicators">
+          <div class="indicator active" onclick="showSlide(0)"></div>
+          <div class="indicator" onclick="showSlide(1)"></div>
+          <div class="indicator" onclick="showSlide(2)"></div>
+        </div>
+      </div>
+
+      <div class="features">
+        <div class="feature">⚡ Real-time Evaluation</div>
+        <div class="feature">🔒 Secure Platform</div>
+        <div class="feature">📊 Instant Analytics</div>
+      </div>
+    </div>
+
+    <div class="right-section">
+      <div class="login-box">
+        <div class="login-header">
+          <div class="login-title">Welcome Back</div>
+          <div class="login-subtitle">Sign in to access your dashboard</div>
+        </div>
+        
+        <!-- <form method="POST" action="/">
+          <div class="form-group">
+            <label for="reg_id">Registration ID</label>
+            <input type="text" id="reg_id" name="reg_id" placeholder="Enter your registration ID" required />
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required />
+          </div>
+          
+          <button type="submit" class="login-button">Sign In</button>
+        </form> -->
+
+         <form id="authForm">
+  <div class="form-group">
+    <label for="phone">Phone Number</label>
+    <input type="text" id="phone" placeholder="Enter registered phone number" required />
+  </div>
+
+  <div id="regFields" style="display:none;">
+    <div class="form-group">
+      <label for="reg_id">Registration ID</label>
+      <input type="text" id="reg_id" placeholder="University Reg ID" />
+    </div>
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input type="text" id="name" placeholder="Full name" />
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="Email address" />
+    </div>
+    <div class="form-group">
+      <label for="department">Department</label>
+      <input type="text" id="department" placeholder="Department" />
+    </div>
+  </div>
+
+  <div class="form-group" id="otpField" style="display:none;">
+    <label for="otp">OTP</label>
+    <input type="text" id="otp" placeholder="Enter OTP" />
+    <div id="otpDisplay" style="margin-top:10px;padding:10px;background:#e8f5e9;border-radius:5px;display:none;">
+      <strong>Generated OTP:</strong> <span id="otpValue" style="font-size:18px;color:#2e7d32;font-weight:bold;"></span>
+    </div>
+  </div>
+
+  <button type="button" class="login-button" onclick="sendOTP()">Send OTP</button>
+  <button type="button" class="login-button" onclick="verifyOTP()" style="display:none;" id="verifyBtn">
+    Verify & Login
+  </button>
+
+  <p style="margin-top:15px;text-align:center;font-size:14px;">
+    <a href="#" onclick="toggleRegister()">New user? Register</a>
+  </p>
+</form>
+
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.carousel-slide');
+    const indicators = document.querySelectorAll('.indicator');
+    
+    function showSlide(index) {
+      // Remove active classes
+      slides.forEach(slide => {
+        slide.classList.remove('active', 'prev');
+      });
+      indicators.forEach(indicator => {
+        indicator.classList.remove('active');
+      });
+      
+      // Add active classes
+      slides[index].classList.add('active');
+      indicators[index].classList.add('active');
+      
+      // Add prev class to previous slide
+      if (currentSlide < index) {
+        slides[currentSlide].classList.add('prev');
+      }
+      
+      currentSlide = index;
+    }
+    
+    // Auto-rotate carousel
+    setInterval(() => {
+      const nextSlide = (currentSlide + 1) % slides.length;
+      showSlide(nextSlide);
+    }, 4000);
+    
+    // Add subtle parallax effect
+    document.addEventListener('mousemove', (e) => {
+      const logoContainer = document.querySelector('.logo-container');
+      const mouseX = e.clientX / window.innerWidth;
+      const mouseY = e.clientY / window.innerHeight;
+      
+      const moveX = (mouseX - 0.5) * 20;
+      const moveY = (mouseY - 0.5) * 20;
+      
+      logoContainer.style.transform = `translate(${moveX}px, ${moveY}px)`;
+    });
+  </script> -->
+  <script>
+let isRegister = false;
+
+function toggleRegister() {
+  isRegister = !isRegister;
+  document.getElementById("regFields").style.display = isRegister ? "block" : "none";
+}
+
+function sendOTP() {
+  const phone = document.getElementById("phone").value;
+
+  if (!phone) {
+    alert("Please enter phone number");
+    return;
+  }
+
+  if (isRegister) {
+    // Registration flow
+    const reg_id = document.getElementById("reg_id").value;
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const department = document.getElementById("department").value;
+    if (!reg_id) {
+      alert("Please enter Registration ID");
+      return;
+    }
+    if (!name) {
+      alert("Please enter Name");
+      return;
+    }
+    if (!email) {
+      alert("Please enter Email");
+      return;
+    }
+    if (!department) {
+      alert("Please enter Department");
+      return;
+    }
+    
+    console.log("Registering user:", reg_id, phone);
+    
+    // Determine role based on reg_id prefix
+    let role = "STUDENT";  // default
+    const prefix = reg_id.charAt(0).toUpperCase();
+    if (prefix === "A") {
+      role = "ADMIN";
+    } else if (prefix === "T") {
+      role = "TEACHER";
+    } else if (prefix === "S") {
+      role = "STUDENT";
+    }
+    
+    console.log("Determined role:", role, "from prefix:", prefix);
+    
+    // First register the user
+    fetch("/register", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ 
+        reg_id,
+        phone,
+        name,
+        email,
+        department,
+        password: "default_password",
+        role: role
+      })
+    }).then(res => {
+      console.log("Registration response:", res.status);
+      return res.json();
+    })
+    .then(data => {
+      console.log("Registration data:", data);
+      if (data.error) {
+        alert("Registration failed: " + data.error);
+        return;
+      }
+      // Then send OTP
+      sendOTPInternal(phone);
+    })
+    .catch(err => {
+      console.error("Registration error:", err);
+      alert("Registration failed: " + err.message);
+    });
+  } else {
+    // Login flow
+    sendOTPInternal(phone);
+  }
+}
+
+function sendOTPInternal(phone) {
+  console.log("Sending OTP to:", phone);
+  
+  fetch("/send-otp", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ phone })
+  }).then(res => {
+    console.log("OTP response:", res.status);
+    return res.json();
+  })
+  .then(data => {
+    console.log("OTP data:", data);
+    if (data.error) {
+      alert("Failed to send OTP: " + data.error);
+      return;
+    }
+    document.getElementById("otpField").style.display = "block";
+    document.getElementById("verifyBtn").style.display = "block";
+    
+    // Display OTP on UI for testing
+    if (data.otp) {
+      document.getElementById("otpValue").textContent = data.otp;
+      document.getElementById("otpDisplay").style.display = "block";
+    }
+  })
+  .catch(err => {
+    console.error("OTP send error:", err);
+    alert("Failed to send OTP: " + err.message);
+  });
+}
+
+function verifyOTP() {
+  const phone = document.getElementById("phone").value;
+  const otp = document.getElementById("otp").value;
+
+  fetch("/verify-login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ phone, otp })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.redirect){
+      window.location.href = data.redirect;
+    } else {
+      alert("Authentication failed");
+    }
+  });
+}
+</script>
+
+</body>
+</html>

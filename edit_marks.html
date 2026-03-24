@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Marks</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #1f2933;
+    }
+    .page {
+      max-width: 760px;
+      margin: 2rem auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      padding: 2rem;
+    }
+    h1 {
+      margin-top: 0;
+      color: #002855;
+    }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .meta-card {
+      background: #f8fafc;
+      border: 1px solid #d9e2ec;
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+    }
+    .meta-card strong {
+      display: block;
+      color: #486581;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+    .review-links {
+      margin: 1rem 0 1.5rem;
+      padding: 1rem;
+      background: #fff8eb;
+      border-radius: 10px;
+      border: 1px solid #ffe0a3;
+    }
+    .review-links a {
+      color: #b45309;
+      text-decoration: none;
+      margin-right: 1rem;
+      font-weight: bold;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-weight: bold;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #bcccdc;
+      font-size: 1rem;
+      box-sizing: border-box;
+      margin-bottom: 1rem;
+    }
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    button,
+    .back-link {
+      display: inline-block;
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    button {
+      background: #002855;
+      color: white;
+    }
+    .back-link {
+      background: #e4e7eb;
+      color: #243b53;
+    }
+    .hint {
+      color: #52606d;
+      margin-top: -0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.92rem;
+    }
+    .flash-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 1rem 0;
+    }
+    .flash-list li {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Edit {{ assessment_kind }} Marks</h1>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flash-list">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <div class="meta">
+      <div class="meta-card">
+        <strong>Student</strong>
+        {{ student_id }}
+      </div>
+      <div class="meta-card">
+        <strong>Subject</strong>
+        {{ subject_name }}
+      </div>
+      <div class="meta-card">
+        <strong>Assessment</strong>
+        {{ assessment_title }}
+      </div>
+      <div class="meta-card">
+        <strong>Current Score</strong>
+        {{ current_marks }}/{{ total_marks }}
+      </div>
+    </div>
+
+    {% if review_links %}
+      <div class="review-links">
+        <strong>Review Artifacts</strong>
+        <div style="margin-top: 0.65rem;">
+          {% for link in review_links %}
+            <a href="{{ link.url }}" target="_blank">{{ link.label }}</a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <form method="post">
+      <label for="marks">Marks</label>
+      <input id="marks" name="marks" type="number" min="0" max="{{ total_marks }}" value="{{ current_marks }}" required>
+      <div class="hint">Allowed range: 0 to {{ total_marks }}</div>
+
+      <div class="actions">
+        <button type="submit">Save Marks</button>
+        <a class="back-link" href="{{ back_url }}">Back to Performance</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

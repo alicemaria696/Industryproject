@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Classes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: #002855;
+      color: white;
+      height: 100vh;
+      padding-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      position: fixed; /* fixed like previous page */
+      left: 0;
+      top: 0;
+    }
+
+    .sidebar h3 {
+      text-align: center;
+      color: white;
+      margin-bottom: 2rem;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 1rem 2rem;
+      display: block;
+    }
+
+    .sidebar a:hover {
+      background: #004b93;
+    }
+
+    /* Main content */
+    .main {
+      margin-left: 220px; /* avoids overlap with sidebar */
+      flex-grow: 1;
+      padding: 2rem;
+    }
+
+    /* Cards */
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      max-width: 500px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    form { margin: 0; }
+
+    button {
+      background: #ff6600;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #e65c00;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h3>Admin Menu</h3>
+    <a href="/admindashboard">🏠 Dashboard</a>
+    <a href="/view_classes">🏫 View Classes</a>
+    <a href="/view_teachers">👨‍🏫 View Teachers</a>
+    <a href="/view_students">👨‍🎓 View Students</a>
+    <a href="/teacher_activity">📊 Teacher Activity</a>
+    <a href="/logout">🚪 Logout</a>
+  </div>
+
+  <div class="main">
+    <h2>Class List</h2>
+    {% for cls in classes %}
+      <div class="card">
+        <span>{{ cls.class_id }}</span>
+        <form method="POST" action="{{ url_for('delete_class', id=cls.id) }}">
+          <button type="submit">🗑️ Delete</button>
+        </form>
+      </div>
+    {% else %}
+      <p>No classes added yet.</p>
+    {% endfor %}
+  </div>
+</body>
+</html>

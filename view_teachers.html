@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Teachers</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      background: #f4f6f8;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: #002855;
+      color: white;
+      height: 100vh;
+      padding-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+    }
+
+    .sidebar h3 {
+      text-align: center;
+      color: white;
+      margin-bottom: 2rem;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 1rem 2rem;
+      display: block;
+    }
+
+    .sidebar a:hover {
+      background: #004b93;
+    }
+
+    /* Main content */
+    .main {
+      margin-left: 220px;
+      flex-grow: 1;
+      padding: 2rem;
+    }
+
+    /* Table styling */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #002855;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h3>Admin Menu</h3>
+    <a href="/admindashboard">🏠 Dashboard</a>
+    <a href="/view_classes">🏫 View Classes</a>
+    <a href="/view_teachers">👨‍🏫 View Teachers</a>
+    <a href="/view_students">👨‍🎓 View Students</a>
+    <a href="/teacher_activity">📊 Teacher Activity</a>
+    <a href="/logout">🚪 Logout</a>
+  </div>
+
+  <div class="main">
+    <h2>Teacher List</h2>
+    <table>
+      <tr>
+        <th>Reg ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Department</th>
+      </tr>
+      {% for teacher in teachers %}
+      <tr>
+        <td>{{ teacher.reg_id }}</td>
+        <td>{{ teacher.name }}</td>
+        <td>{{ teacher.email }}</td>
+        <td>{{ teacher.department }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</body>
+</html>

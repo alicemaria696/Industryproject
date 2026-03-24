@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Script Assignment</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 2rem;
+    }
+    .form-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 800px;
+      margin: auto;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    .form-row {
+      display: flex;
+      gap: 1rem;
+    }
+    .form-row .form-group {
+      flex: 1;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    input[type=text], input[type=number], input[type=datetime-local], textarea, select {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 0.7rem 1.5rem;
+      background-color: #002855;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004b93;
+    }
+    .back-btn {
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 1rem;
+      background-color: #999;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+    }
+    .back-btn:hover {
+      background-color: #777;
+    }
+    .test-case-item {
+      border: 1px solid #ddd;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      border-radius: 5px;
+      background: #f9f9f9;
+    }
+    .test-case-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .remove-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .template-section {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 5px;
+      margin: 1rem 0;
+    }
+    .checkbox-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      font-weight: normal;
+    }
+    .checkbox-group input {
+      width: auto;
+      margin-right: 0.5rem;
+    }
+    small {
+      color: #666;
+      font-size: 0.85em;
+    }
+    .optional-section {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 5px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+    .optional-section h4 {
+      margin-top: 0;
+      color: #856404;
+    }
+    .toggle-btn {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+    .toggle-btn:hover {
+      background: #5a6268;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-box">
+    <a href="/subject/{{ subject.sub_id }}/assignments" class="back-btn">← Back to Assignments</a>
+    <h2>Create Script Assignment</h2>
+    <form method="POST" action="/subject/{{ subject.sub_id }}/assignments/create_script" enctype="multipart/form-data">
+      <input type="hidden" name="sub_id" value="{{ subject.sub_id }}">
+
+      <!-- Basic Assignment Details -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" name="title" required>
+        </div>
+        <div class="form-group">
+          <label>Programming Language</label>
+          <select name="language" required>
+            <option value="c">C</option>
+            <option value="cpp">C++</option>
+            <option value="java">Java</option>
+            <option value="python">Python</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Deadline</label>
+          <input type="datetime-local" name="deadline" required>
+        </div>
+        <div class="form-group">
+          <label>Total Marks</label>
+          <input type="number" name="total_marks" required min="1" max="100">
+        </div>
+      </div>
+
+      <!-- Problem Description -->
+      <div class="form-group">
+        <label>Problem Description</label>
+        <textarea name="questions" rows="4" placeholder="Write your problem description here..." required></textarea>
+      </div>
+
+      <!-- Optional Function Template Section -->
+      <div class="optional-section">
+        <h4>Function Template (Optional)</h4>
+        <button type="button" class="toggle-btn" onclick="toggleFunctionTemplate()">Show Function Template Options</button>
+        
+        <div id="function-template-section" class="hidden">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Function Name (Optional)</label>
+              <input type="text" name="function_name" id="function_name" placeholder="e.g., calculateSum">
+            </div>
+            <div class="form-group">
+              <label>Return Type (Optional)</label>
+              <select name="return_type" id="return_type">
+                <option value="">Select return type...</option>
+                <option value="int">int</option>
+                <option value="float">float</option>
+                <option value="double">double</option>
+                <option value="char">char</option>
+                <option value="char*">char* (string)</option>
+                <option value="void">void</option>
+                <option value="long">long</option>
+                <option value="bool">bool</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Template Code (Optional)</label>
+            <textarea name="template_code" rows="6" placeholder="Provide starter code template (leave empty for basic template)"></textarea>
+            <small>Leave empty to let students write code from scratch, or provide a custom template</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Execution Limits -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Time Limit (seconds)</label>
+          <input type="number" name="time_limit" value="2" min="1" max="10">
+        </div>
+        <div class="form-group">
+          <label>Memory Limit (KB)</label>
+          <input type="number" name="memory_limit" value="128000" min="64000" max="512000">
+        </div>
+      </div>
+
+      <!-- Rubric Criteria -->
+      <div class="form-group">
+        <label>Rubric Criteria (Select applicable):</label>
+        <div class="checkbox-group">
+          <label><input type="checkbox" name="rubric_criteria" value="Deadline" checked> Deadline (30%)</label>
+          <label><input type="checkbox" name="rubric_criteria" value="Compilation" checked> Compilation (20%)</label>
+          <label><input type="checkbox" name="rubric_criteria" value="Testcase" checked> Test Cases (50%)</label>
+        </div>
+      </div>
+
+      <!-- Test Cases Section -->
+      <div class="form-group">
+        <label>Test Cases</label>
+        <div id="testcases-area">
+          <div class="test-case-item">
+            <div class="test-case-header">
+              <strong>Test Case 1</strong>
+              <div>
+                <label style="font-weight: normal;">
+                  <input type="checkbox" name="test_hidden_1" value="1"> Hidden
+                </label>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Input</label>
+                <textarea name="test_input_1" placeholder="Enter input values (one per line)" rows="3" required></textarea>
+              </div>
+              <div class="form-group">
+                <label>Expected Output</label>
+                <textarea name="test_output_1" placeholder="Enter expected output" rows="3" required></textarea>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Weight</label>
+              <input type="number" name="test_weight_1" value="10" min="1">
+            </div>
+          </div>
+        </div>
+        <button type="button" onclick="addTestCase()">➕ Add Test Case</button>
+      </div>
+
+      <div class="form-group">
+        <button type="submit">Create Script Assignment</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    let testCaseCount = 1;
+
+    // Set current datetime on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const now = new Date();
+      // Add 1 day to current date as default deadline
+      now.setDate(now.getDate() + 1);
+      const deadlineInput = document.querySelector('input[name="deadline"]');
+      deadlineInput.value = now.toISOString().slice(0, 16);
+    });
+
+    function toggleFunctionTemplate() {
+      const section = document.getElementById('function-template-section');
+      const button = document.querySelector('.toggle-btn');
+      
+      if (section.classList.contains('hidden')) {
+        section.classList.remove('hidden');
+        button.textContent = 'Hide Function Template Options';
+      } else {
+        section.classList.add('hidden');
+        button.textContent = 'Show Function Template Options';
+      }
+    }
+
+    function addTestCase() {
+      testCaseCount++;
+      const div = document.createElement('div');
+      div.className = 'test-case-item';
+      div.innerHTML = `
+        <div class="test-case-header">
+          <strong>Test Case ${testCaseCount}</strong>
+          <div>
+            <label style="font-weight: normal;">
+              <input type="checkbox" name="test_hidden_${testCaseCount}" value="1"> Hidden
+            </label>
+            <button type="button" class="remove-btn" onclick="removeTestCase(this)">Remove</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Input</label>
+            <textarea name="test_input_${testCaseCount}" placeholder="Enter input values (one per line)" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Expected Output</label>
+            <textarea name="test_output_${testCaseCount}" placeholder="Enter expected output" rows="3" required></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Weight</label>
+          <input type="number" name="test_weight_${testCaseCount}" value="10" min="1">
+        </div>
+      `;
+      document.getElementById('testcases-area').appendChild(div);
+    }
+
+    function removeTestCase(button) {
+      button.closest('.test-case-item').remove();
+    }
+  </script>
+
+</body>
+</html>

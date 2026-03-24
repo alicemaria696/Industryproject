@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Test Attempts</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 2rem; }
+    .card { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+    th { background: #002855; color: white; }
+    .back-btn { text-decoration: none; background: #999; color: white; padding: 0.5rem 1rem; border-radius: 5px; }
+    .back-btn:hover { background: #777; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <a href="/subject/{{ test.sub_id }}/assignments" class="back-btn">&larr; Back to Assignments</a>
+    <h2>Live Test Attempts - {{ test.title }}</h2>
+    {% if attempts %}
+      <table>
+        <tr>
+          <th>Student ID</th>
+          <th>Status</th>
+          <th>Score</th>
+          <th>Started</th>
+          <th>Ended</th>
+          <th>Focus Loss</th>
+          <th>Proctor Events</th>
+          <th>Recording</th>
+          <th>Response</th>
+        </tr>
+        {% for attempt in attempts %}
+        <tr>
+          <td>{{ attempt.student_id }}</td>
+          <td>{{ attempt.status }}</td>
+          <td>{{ attempt.score_display }}</td>
+          <td>{{ attempt.started_at.strftime('%Y-%m-%d %H:%M') if attempt.started_at else 'N/A' }}</td>
+          <td>{{ attempt.ended_at.strftime('%Y-%m-%d %H:%M') if attempt.ended_at else 'N/A' }}</td>
+          <td>{{ attempt.focus_lost_count }}</td>
+          <td>{{ attempt.proctor_events|length if attempt.proctor_events else 0 }}</td>
+          <td>
+            {% if attempt.recording_path %}
+              <a href="{{ url_for('live_test_recording', filename=attempt.recording_path) }}" target="_blank">View</a>
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td>
+            {% if attempt.response_file %}
+              <a href="{{ url_for('live_test_response_file', filename=attempt.response_file) }}">Download</a>
+            {% elif attempt.response_text %}
+              {{ attempt.response_text|truncate(60) }}
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+      <p>No attempts yet.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

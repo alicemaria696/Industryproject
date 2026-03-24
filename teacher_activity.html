@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Activity | Real-Time Assessment</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; display: flex; }
+    .sidebar {
+      width: 220px; background: #002855; color: white; height: 100vh; padding-top: 2rem; display: flex; flex-direction: column;
+    }
+    .sidebar a {
+      color: white; text-decoration: none; padding: 1rem 2rem; display: block;
+    }
+    .sidebar a:hover { background: #004b93; }
+    .main {
+      flex-grow: 1; background: #f4f6f8; padding: 2rem;
+    }
+    .top {
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    /* Filters section */
+    .filters {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .filter-label {
+      font-weight: bold;
+      color: #495057;
+    }
+    
+    select, button {
+      padding: 8px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      background-color: white;
+      font-size: 14px;
+    }
+    
+    button {
+      background-color: #002855;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    button:hover {
+      background-color: #004b93;
+    }
+    
+    /* Activity section styles */
+    .activity-section {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .teacher-card {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    
+    .inactive-teacher {
+      background-color: #fff3f3;
+      border-left: 4px solid #ff4d4d;
+    }
+    
+    .active-teacher {
+      background-color: #f0fff4;
+      border-left: 4px solid #28a745;
+    }
+    
+    .no-results {
+      padding: 15px;
+      color: #6c757d;
+      font-weight: bold;
+      text-align: center;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+    
+    .stats-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .stat-item {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #002855;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: #6c757d;
+    }
+    
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .back-button:hover {
+      background-color: #5a6268;
+    }
+    
+    .days-since {
+      font-size: 12px;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+    
+    .activity-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    
+    .badge-active {
+      background-color: #28a745;
+      color: white;
+    }
+    
+    .badge-inactive {
+      background-color: #dc3545;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h3 style="text-align: center; color: white; margin-bottom: 2rem;">Admin Menu</h3>
+    <a href="/admindashboard">🏠 Dashboard</a>
+    <a href="/view_teachers">👨‍🏫 View Teachers</a>
+    <a href="/view_students">👨‍🎓 View Students</a>
+    <a href="/view_classes">🏫 View Classes</a>
+    <a href="/teacher_activity">📊 Teacher Activity</a>
+    <a href="/logout">🚪 Logout</a>
+  </div>
+  <div class="main">
+    <div class="top">
+      <h2>Teacher Activity Monitor</h2>
+      <a href="/admindashboard" class="back-button">← Back to Dashboard</a>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-number">{{ total_teachers }}</div>
+        <div class="stat-label">Total Teachers</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">{{ active_teachers_count }}</div>
+        <div class="stat-label">Active Teachers</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">{{ inactive_teachers_count }}</div>
+        <div class="stat-label">Inactive Teachers</div>
+      </div>
+    </div>
+    
+    <div class="filters">
+      <div class="filter-group">
+        <span class="filter-label">Show:</span>
+        <select id="showFilter">
+          <option value="all" {% if show_filter == 'all' %}selected{% endif %}>All Teachers</option>
+          <option value="active" {% if show_filter == 'active' %}selected{% endif %}>Active Only</option>
+          <option value="inactive" {% if show_filter == 'inactive' %}selected{% endif %}>Inactive Only</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <span class="filter-label">Sort by:</span>
+        <select id="sortFilter">
+          <option value="most_active" {% if sort_filter == 'most_active' %}selected{% endif %}>Most Active First</option>
+          <option value="least_active" {% if sort_filter == 'least_active' %}selected{% endif %}>Least Active First</option>
+          <option value="name_asc" {% if sort_filter == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+          <option value="name_desc" {% if sort_filter == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+        </select>
+      </div>
+      
+      <button onclick="applyFilters()">Apply Filters</button>
+    </div>
+    
+    <div class="activity-section">
+      <h3>Teacher Activity Overview</h3>
+      
+      {% if teachers %}
+        <p>Showing {{ teachers|length }} teacher(s):</p>
+        {% for teacher in teachers %}
+          <div class="teacher-card {% if teacher.is_active %}active-teacher{% else %}inactive-teacher{% endif %}">
+            <strong>{{ teacher.name }}</strong> ({{ teacher.reg_id }}) - {{ teacher.department }}
+            <span class="activity-badge {% if teacher.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+              {% if teacher.is_active %}ACTIVE{% else %}INACTIVE{% endif %}
+            </span>
+            <br>
+            <small>Email: {{ teacher.email }}</small><br>
+            <small>Last activity: {% if teacher.last_activity %}{{ teacher.last_activity.strftime('%Y-%m-%d') }}{% else %}Never{% endif %}</small>
+            {% if teacher.days_since_activity is not none %}
+              <div class="days-since">
+                {% if teacher.days_since_activity == 0 %}
+                  Active today
+                {% elif teacher.days_since_activity == 1 %}
+                  Active yesterday
+                {% else %}
+                  {{ teacher.days_since_activity }} days since last activity
+                {% endif %}
+              </div>
+            {% endif %}
+            {% if teacher.subjects %}
+              <br><small>Subjects: {{ teacher.subjects|join(', ') }}</small>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="no-results">
+          <p>No teachers match the selected filters.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    function applyFilters() {
+      const showFilter = document.getElementById('showFilter').value;
+      const sortFilter = document.getElementById('sortFilter').value;
+      
+      // Build URL with query parameters
+      let url = '/teacher_activity?';
+      if (showFilter !== 'all') url += `show=${showFilter}&`;
+      if (sortFilter !== 'most_active') url += `sort=${sortFilter}`;
+      
+      // Remove trailing & if needed
+      if (url.endsWith('&')) url = url.slice(0, -1);
+      
+      window.location.href = url;
+    }
+  </script>
+</body>
+</html>
